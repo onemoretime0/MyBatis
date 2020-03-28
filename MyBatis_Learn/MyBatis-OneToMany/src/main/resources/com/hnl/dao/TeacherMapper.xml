@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hnl.dao.TeacherMapper">
+    <!--按结果处理-->
+    <!--<select id="getTeacher" resultMap="TeacherStudent">
+        select s.id sid ,s.name sname ,t.name tname,t.id teacherId
+        from student s ,teacher t
+        where s.tid = t.id and t.id =#{teacherId};
+    </select>
+    <resultMap id="TeacherStudent" type="Teacher">
+        <result property="id" column="teacherId"/>
+        <result property="name" column="tname"/>
+        &lt;!&ndash; 复杂属性，需要单独处理, 对象使用：association  集合使用：collection
+            javaType：指定属性的类型
+            ofType：集合中泛型的类型
+        &ndash;&gt;
+        <collection property="students" ofType="Student">
+            <result property="id" column="sid"/>
+            <result property="name" column="sname"/>
+            <result property="tid" column="tid"/>
+        </collection>
+    </resultMap>-->
+
+    <!--按查询处理-->
+    <select id="getTeacher" resultMap="TeacherStudent">
+        select * from teacher where id =#{teacherId};
+    </select>
+    <resultMap id="TeacherStudent" type="Teacher">
+        <!--这个标签的意思就是，在teacher表中的查询到的结果的column=id 传给子查询getStudentByTeacherId
+        并将子查询的结果集映射给Teacher类的students属性
+        -->
+        <collection property="students" javaType="ArrayList" ofType="Student" select="getStudentByTeacherId" column="id"/>
+    </resultMap>
+    <!--这个查询的意思就是根据在teacher表中的id 的值，查询student表中对应的tid = teacher.id的结果
+        tid =#{tid} 中参数是在teacher表中查询到的并由<collection>标签中的column属性传入的
+    -->
+    <select id="getStudentByTeacherId" resultType="Student">
+        select * from student where tid =#{tid}
+    </select>
+</mapper>
